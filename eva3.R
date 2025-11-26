@@ -38,13 +38,23 @@ sum(is.na(df_completo))
 
 # eliminar columna "ID region"
 
-# cambiar el nombre del campo "Variedad / Tipo" a "Variedad_tipo"
+# cambiar el nombre del campo "Variedad / Tipo" a "Variedad_tipo", "ID region" a "ID_region", "Unidad de comercializacion" a "Unidad_comercializacion", "Precio minimo" a "Precio_min", "Precio maximo" a "Precio_max" y "Precio promedio" a "Precio_prom"
+
+# comvertir columnas de precios y volumen a numérico
+
+# crear columnas año, mes y día a partir de la columna "Fecha"
 
 # en el campo "Variedad_tipo", eliminar "(o)" en los valores
 
+# crear columna binaria de nacional/extranjero a partir de la columna "Origen"
+
+# crear columna agrupadora de categoria (fruta/hortaliza) a partir de la columna "Subsector"
+
+# crear columna de rangos de precios con "Precio_min" y Precio_max
+
 # en el campo "Unidad de comercializacion", eliminar "$/" en los valores
 
-# en los campos "Precio minimo", "Precio maximo" y "Precio promedio", remplazar "," por "." y convertir a numérico
+# en los campos "Precio_prom", "Precio_max" y "Precio_min", remplazar "," por "." y convertir a numérico
 
 
 
