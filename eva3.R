@@ -142,8 +142,23 @@ df_limpieza = df_limpieza %>%
 unidades = unique(df_limpieza$Unidad_comercializacion)
 print(unidades)
 
-# preguntar si se pueden trabajar con 5 unidades ejemplo: KG, atado, docena de paquetes, etc y hacer un dataframe para cada tipo de unidad
+# del dataframe de frutas y hortalizas mostrar todas las frutas y hortalizas sin repetir los nombres y tambien que me muestre las columnas de "Subsector" y "Unidad_comercializacion"
 
+frutas_unicas = df_frutas %>%
+  select(Producto, Subsector, Unidad_comercializacion) %>%
+  distinct()
+hortalizas_unicas = df_hortalizas %>%
+  select(Producto, Subsector, Unidad_comercializacion) %>%
+  distinct()
+
+
+#crear dataframes finales de 5 frutas ('Mora', 'Tumbo', 'Platano', 'Maracuya', 'Breva') y 5 hortalizas ('Ciboulette', 'Coliflor', 'Orégano', 'Bruselas (repollito)', 'Repollo') 
+
+df_5_frutas = df_limpieza %>%
+  filter(Producto %in% c('Mora', 'Tumbo', 'Plátano', 'Maracuyá', 'Breva'))
+
+df_5_hortalizas = df_limpieza %>%
+  filter(Producto %in% c('Ciboulette', 'Coliflor', 'Orégano', 'Bruselas (repollito)', 'Repollo'))
 
 
 
