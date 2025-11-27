@@ -2,10 +2,15 @@ file.choose()
 install.packages("dplyr")
 install.packages("stringr")
 install.packages("readxl")
+install.packages("ggplot2")
+install.packages("tidyr")
+
 
 library(readxl)
 library(stringr)
 library(dplyr)
+library(ggplot2)
+library(tidyr)
 
 rutas = c("D:\\6to semestre\\dataminin\\eva3\\16.xlsx",
           "D:\\6to semestre\\dataminin\\eva3\\17.xlsx",
@@ -183,7 +188,7 @@ df_5_hortalizas = df_5_hortalizas %>%
 
 df_5_frutas = df_5_frutas %>%
   arrange(Producto,Unidad_comercializacion, Año) %>%
-  group_by(Producto) %>%
+  group_by(Producto, Unidad_comercializacion) %>%
   mutate(
     V_porcentual_año = ifelse(Año == 2016, 0, (Precio_promedio_anual - lag(Precio_promedio_anual)) / lag(Precio_promedio_anual) * 100)
   ) %>%
@@ -191,11 +196,31 @@ df_5_frutas = df_5_frutas %>%
 
 df_5_hortalizas = df_5_hortalizas %>%
   arrange(Producto,Unidad_comercializacion, Año) %>%
-  group_by(Producto) %>%
+  group_by(Producto, Unidad_comercializacion) %>%
   mutate(
     V_porcentual_año = ifelse(Año == 2016, 0, (Precio_promedio_anual - lag(Precio_promedio_anual)) / lag(Precio_promedio_anual) * 100)
   ) %>%
   ungroup()
+
+
+# crear una view que muestre solo las columnas de "Producto", "Unidad_comercializacion", "Año" y "Variacion_porcentual_año" sin repetir filas en los dataframes de frutas y hortalizas finales
+
+view_frutas = df_5_frutas %>%
+  select(Producto, Unidad_comercializacion, Año, V_porcentual_año) %>%
+  distinct()
+view_hortalizas = df_5_hortalizas %>%
+  select(Producto, Unidad_comercializacion, Año, V_porcentual_año) %>%
+  distinct()
+
+View(view_frutas)
+View(view_hortalizas)
+
+# a los valores n/a en la columna "Variacion_porcentual_año" asignarles el valor de 0 en los dataframes de frutas y hortalizas finales ya que no hay variacion en el primer año
+
+df_5_frutas = df_5_frutas %>%
+  mutate(
+    V_porcentual_año = ifelse(is.na(V_porcentual_año), 0, V_porcentual_año)
+  )
 
 
 
