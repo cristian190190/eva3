@@ -161,5 +161,45 @@ df_5_hortalizas = df_limpieza %>%
   filter(Producto %in% c('Ciboulette', 'Coliflor', 'Orégano', 'Bruselas (repollito)', 'Repollo'))
 
 
+# crear una columna "Volumen_anual" que sea la suma de todos los volúmenes por año para cada producto y otra columna "Precio_promedio_anual" que sea el promedio de los precios promedios por año para cada producto en los dataframes de frutas y hortalizas finales
+
+df_5_frutas = df_5_frutas %>%
+  group_by(Producto,Unidad_comercializacion, Año) %>%
+  mutate(
+    Volumen_anual = sum(Volumen, na.rm = TRUE),
+    Precio_promedio_anual = mean(Precio_prom, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+df_5_hortalizas = df_5_hortalizas %>%
+  group_by(Producto,Unidad_comercializacion, Año) %>%
+  mutate(
+    Volumen_anual = sum(Volumen, na.rm = TRUE),
+    Precio_promedio_anual = mean(Precio_prom, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# crear columna "Variacio_porcentual_año" en el año 2016 deberia ser 0% y en los años siguientes el porcentaje de VARIACION DE PRECIOS respecto al año anterior para cada producto en los dataframes de frutas y hortalizas finales
+
+df_5_frutas = df_5_frutas %>%
+  arrange(Producto,Unidad_comercializacion, Año) %>%
+  group_by(Producto) %>%
+  mutate(
+    V_porcentual_año = ifelse(Año == 2016, 0, (Precio_promedio_anual - lag(Precio_promedio_anual)) / lag(Precio_promedio_anual) * 100)
+  ) %>%
+  ungroup()
+
+df_5_hortalizas = df_5_hortalizas %>%
+  arrange(Producto,Unidad_comercializacion, Año) %>%
+  group_by(Producto) %>%
+  mutate(
+    V_porcentual_año = ifelse(Año == 2016, 0, (Precio_promedio_anual - lag(Precio_promedio_anual)) / lag(Precio_promedio_anual) * 100)
+  ) %>%
+  ungroup()
+
+
+
+#B-------------------------------------------------------------------------------------------
+
 
 
