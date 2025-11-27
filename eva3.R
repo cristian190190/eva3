@@ -66,6 +66,10 @@ df_limpieza = df_limpieza %>%
 
 # crear columnas año, mes y día a partir de la columna "Fecha"
 
+df_limpieza <- df_limpieza %>%
+  mutate(
+    Fecha = as.Date(Fecha, format = "%Y-%m-%d") 
+  )
 df_limpieza = df_limpieza %>%
   mutate(
     Año = as.numeric(format(Fecha, "%Y")),
