@@ -108,14 +108,14 @@ df_limpieza = df_limpieza %>%
   mutate(
     Nacional_extranjero = ifelse(Origen %in% extranjero, 0, 1)
   )
-# crear columna agrupadora de categoria ("Frutas"/"Hortalizas") a partir de la columna "Subsector"
+# crear 2 dataframes de ("Frutas"/"Hortalizas") a partir de la columna "Subsector"
 catergorias = unique(df_limpieza$Subsector)
 print(catergorias)
 
-df_limpieza = df_limpieza %>%
-  mutate(
-    Categoria = ifelse(Subsector %in% c("Frutas"), "Frutas", "Hortalizas")
-  )
+df_frutas = df_limpieza %>%
+  filter(Subsector == "Frutas")
+df_hortalizas = df_limpieza %>%
+  filter(Subsector == "Hortalizas y tubérculos")
 
 # crear columna de rangos de precios juntando los datos de "Precio_min" y "Precio_max". ejemplo: columna minimo "399.9999" columna maximo "419.9999"
 
