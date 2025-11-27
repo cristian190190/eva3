@@ -222,6 +222,12 @@ df_5_frutas = df_5_frutas %>%
     V_porcentual_año = ifelse(is.na(V_porcentual_año), 0, V_porcentual_año)
   )
 
+df_5_hortalizas = df_5_hortalizas %>%
+  mutate(
+    V_porcentual_año = ifelse(is.na(V_porcentual_año), 0, V_porcentual_año)
+  )
+  
+
 
 
 #B-------------------------------------------------------------------------------------------
