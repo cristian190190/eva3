@@ -281,20 +281,38 @@ print(frecuencia_unidades)
 
 
 # C ------------------------------------
-
-
-# --- 1. Definición del Dataframe (Mora en kilo) ---
+#REGRESION LINEAL PARA LA FRUTA MORA
 df_regresion_mora <- df_5_frutas %>%
   filter(Producto == 'Mora' & Unidad_comercializacion == 'bandeja 2 kilos') %>%
-  # Asegurar que solo haya una fila por año para la regresión anual
   distinct(Año, .keep_all = TRUE)
 
-# --- 2. Generación del Gráfico de Regresión ---
 ggplot(df_regresion_mora, aes(x = Año, y = Precio_promedio_anual)) +
-  # Puntos de datos
   geom_point(color = "red", size = 3) +
+  geom_smooth(
+    method = "lm", 
+    se = TRUE, 
+    color = "blue", 
+    linetype = "dashed"
+  ) +
+
+  labs(
+    title = "Regresión Lineal: Tendencia de Precios Anuales de la Mora (Unidad: Bandeja 2 kilos)",
+    x = "Año",
+    y = "Precio Promedio Anual ($)",
+    caption = "Fuente: Elaboración propia, fluctuación precio de la Mora 2016-2025"
+  ) +
   
-  # Línea de regresión ajustada
+  scale_x_continuous(breaks = unique(df_regresion_mora$Año)) +
+  theme_gray()
+
+#REGRESION LINEAL PARA LA HORTALIZA REPOLLO
+
+df_regresion_repollo <- df_5_hortalizas %>%
+  filter(Producto == 'Repollo' & Unidad_comercializacion == 'unidad') %>%
+  distinct(Año, .keep_all = TRUE)
+
+ggplot(df_regresion_repollo, aes(x = Año, y = Precio_promedio_anual)) +
+  geom_point(color = "red", size = 3) +
   geom_smooth(
     method = "lm", 
     se = TRUE, 
@@ -302,16 +320,13 @@ ggplot(df_regresion_mora, aes(x = Año, y = Precio_promedio_anual)) +
     linetype = "dashed"
   ) +
   
-  # Etiquetas y Título
   labs(
-    title = "Regresión Lineal: Tendencia de Precios Anuales del Mora (Unidad: Bandeja 2 kilos)",
+    title = "Regresión Lineal: Tendencia de Precios Anuales del Repollo (Unidad: unidad)",
     x = "Año",
     y = "Precio Promedio Anual ($)",
-    caption = "Fuente: Elaboración propia, fluctuación precio de Mora 2016-2025"
+    caption = "Fuente: Elaboración propia, fluctuación precio del Repollo 2016-2025"
   ) +
   
-  scale_x_continuous(breaks = unique(df_regresion_mora$Año)) +
-  
-  theme_minimal()
-
+  scale_x_continuous(breaks = unique(df_regresion_repollo$Año)) +
+  theme_gray()
 
