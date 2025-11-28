@@ -282,10 +282,8 @@ print(frecuencia_unidades)
 
 # C ------------------------------------
 
-library(ggplot2)
-library(dplyr) # Asegúrate de que dplyr esté cargado para usar %>%
 
-# --- 1. Definición del Dataframe (Tumbo en kilo) ---
+# --- 1. Definición del Dataframe (Mora en kilo) ---
 df_regresion_mora <- df_5_frutas %>%
   filter(Producto == 'Mora' & Unidad_comercializacion == 'bandeja 2 kilos') %>%
   # Asegurar que solo haya una fila por año para la regresión anual
@@ -312,7 +310,6 @@ ggplot(df_regresion_mora, aes(x = Año, y = Precio_promedio_anual)) +
     caption = "Fuente: Elaboración propia, fluctuación precio de Mora 2016-2025"
   ) +
   
-  # CORRECCIÓN CLAVE: Mostrar todos los años en el eje X
   scale_x_continuous(breaks = unique(df_regresion_mora$Año)) +
   
   theme_minimal()
