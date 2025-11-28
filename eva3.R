@@ -227,10 +227,94 @@ df_5_hortalizas = df_5_hortalizas %>%
     V_porcentual_año = ifelse(is.na(V_porcentual_año), 0, V_porcentual_año)
   )
   
-
-
-
 #B-------------------------------------------------------------------------------------------
 
+resumen_descriptivo <- function(df, categoria) {
+  df_resumen <- df %>%
+
+    group_by(Producto, Unidad_comercializacion) %>%
+    summarise(
+
+      Media_Precio_Anual = mean(Precio_promedio_anual, na.rm = TRUE),
+      Mediana_Precio_Anual = median(Precio_promedio_anual, na.rm = TRUE),
+      Min_Precio_Anual = min(Precio_promedio_anual, na.rm = TRUE),
+      Max_Precio_Anual = max(Precio_promedio_anual, na.rm = TRUE),
+      Rango_Precio_Anual = Max_Precio_Anual - Min_Precio_Anual,
+      
+
+      Media_Variacion_Precio = mean(V_porcentual_año[V_porcentual_año != 0], na.rm = TRUE),
+
+      Rango_Variacion_Precio = max(V_porcentual_año[V_porcentual_año != 0], na.rm = TRUE) - 
+        min(V_porcentual_año[V_porcentual_año != 0], na.rm = TRUE),
+      
+
+      Percentil_25_Precio = quantile(Precio_promedio_anual, 0.25, na.rm = TRUE),
+      
+      .groups = 'drop'
+    ) %>%
+
+    mutate(Categoria = categoria)
+  
+  return(df_resumen)
+}
+
+resumen_frutas <- resumen_descriptivo(df_5_frutas, "Frutas")
+resumen_hortalizas <- resumen_descriptivo(df_5_hortalizas, "Hortalizas")
+
+resumen_combinado <- bind_rows(resumen_frutas, resumen_hortalizas)
+
+print(resumen_combinado)
+
+write.csv2(resumen_combinado, "C:/Users/ferna/OneDrive/Escritorio/I.I/3ro/2SM/Mineria/RESUMEN.csv", row.names = FALSE)
+
+# Tablas de frecuencia para la columna Unidad_comercializacion
+frecuencia_unidades <- bind_rows(df_5_frutas, df_5_hortalizas) %>%
+  group_by(Subsector, Producto, Unidad_comercializacion) %>%
+  summarise(
+    Total_Registros = n(),
+    .groups = 'drop'
+  ) %>%
+  arrange(Subsector, Producto, desc(Total_Registros))
+
+print("### Tablas de Frecuencia de Unidades de Comercialización ###")
+print(frecuencia_unidades)
+
+
+# C ------------------------------------
+
+library(ggplot2)
+library(dplyr) # Asegúrate de que dplyr esté cargado para usar %>%
+
+# --- 1. Definición del Dataframe (Tumbo en kilo) ---
+df_regresion_mora <- df_5_frutas %>%
+  filter(Producto == 'Mora' & Unidad_comercializacion == 'bandeja 2 kilos') %>%
+  # Asegurar que solo haya una fila por año para la regresión anual
+  distinct(Año, .keep_all = TRUE)
+
+# --- 2. Generación del Gráfico de Regresión ---
+ggplot(df_regresion_mora, aes(x = Año, y = Precio_promedio_anual)) +
+  # Puntos de datos
+  geom_point(color = "red", size = 3) +
+  
+  # Línea de regresión ajustada
+  geom_smooth(
+    method = "lm", 
+    se = TRUE, 
+    color = "blue", 
+    linetype = "dashed"
+  ) +
+  
+  # Etiquetas y Título
+  labs(
+    title = "Regresión Lineal: Tendencia de Precios Anuales del Mora (Unidad: Bandeja 2 kilos)",
+    x = "Año",
+    y = "Precio Promedio Anual ($)",
+    caption = "Fuente: Elaboración propia, fluctuación precio de Mora 2016-2025"
+  ) +
+  
+  # CORRECCIÓN CLAVE: Mostrar todos los años en el eje X
+  scale_x_continuous(breaks = unique(df_regresion_mora$Año)) +
+  
+  theme_minimal()
 
 
