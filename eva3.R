@@ -11,6 +11,7 @@ library(stringr)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
+library(scales)
 
 rutas = c("D:\\6to semestre\\dataminin\\eva3\\16.xlsx",
           "D:\\6to semestre\\dataminin\\eva3\\17.xlsx",
@@ -329,4 +330,280 @@ ggplot(df_regresion_repollo, aes(x = Año, y = Precio_promedio_anual)) +
   
   scale_x_continuous(breaks = unique(df_regresion_repollo$Año)) +
   theme_gray()
+
+# D --------------------------------------------
+# Gráfico 1: Gráfico de Precio Promedio de Mora en Base al Origen
+
+df_maracuya_origen_volumen <- df_5_frutas %>%
+  filter(Producto == 'Maracuyá') %>%
+  mutate(
+    Origen_Etiqueta = case_when(
+      Nacional_extranjero == 1 ~ "Nacional",
+      Nacional_extranjero == 0 ~ "Extranjero",
+      TRUE ~ "No Definido" 
+    )
+  ) %>%
+  
+  group_by(Origen_Etiqueta) %>%
+  summarise(
+    Volumen_Total_Acumulado = sum(Volumen_anual, na.rm = TRUE),
+    .groups = 'drop'
+  )
+ggplot(df_maracuya_origen_volumen, aes(x = Origen_Etiqueta, y = Volumen_Total_Acumulado, fill = Origen_Etiqueta)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::comma(Volumen_Total_Acumulado, big.mark = ".")), vjust = -0.5, size = 4) + 
+  labs(
+    title = "Volumen Total de la Maracuyá: Comparación por Origen",
+    x = "Origen del Producto",
+    y = "Volumen Total Acumulado (Unidades)", 
+    fill = "Origen",
+    caption = "Fuente: Elaboración propia, Volumen Total de Maracuyá (Extranjero Vs Nacional) 2016-2025"
+  ) +
+  scale_y_continuous(labels = scales::label_number(scale = 1e-6, suffix = "M"))
+  theme_gray()
+
+# Gráfico 2: Top 3 Frutas (2020 a 2025)
+  
+  df_frutas_top_periodo <- df_5_frutas %>%
+    filter(Año >= 2020 & Año <= 2025) %>%
+    group_by(Producto) %>%
+    summarise(
+      Volumen_Total_Periodo = sum(Volumen_anual, na.rm = TRUE), 
+      .groups = 'drop'
+    ) %>%
+    arrange(desc(Volumen_Total_Periodo)) %>%
+    slice_head(n = 3)
+  
+  ggplot(df_frutas_top_periodo, aes(x = reorder(Producto, Volumen_Total_Periodo), y = Volumen_Total_Periodo, fill = Producto)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = scales::comma(Volumen_Total_Periodo, big.mark = ".")), vjust = -0.5, size = 4) + 
+    labs(
+      title = "Top 3 Frutas por Volumen Total Acumulado (2020 - 2025)",
+      x = "Fruta",
+      y = "Volumen Total Acumulado",
+      fill = "Fruta",
+      caption = "Fuente: Elaboración propia, Top 3 frutas (Volumen) 2020-2025"
+    ) +
+    scale_y_continuous(labels = scales::label_comma(big.mark = ".")) +
+    theme_minimal()
+  
+  
+# Grafico 3: Top 3 Hortalizas (Vega Central Mapocho, 2025)
+
+df_hortalizas_top_vega <- df_5_hortalizas %>%
+    filter(
+      Año == 2025,
+      Mercado == "Vega Central Mapocho de Santiago" 
+    ) %>%
+    group_by(Producto) %>%
+    summarise(
+      Volumen_Total_Mercado = sum(Volumen_anual, na.rm = TRUE), 
+      .groups = 'drop'
+    ) %>%
+    arrange(desc(Volumen_Total_Mercado)) %>%
+    slice_head(n = 3)
+
+  ggplot(df_hortalizas_top_vega, aes(x = reorder(Producto, Volumen_Total_Mercado), y = Volumen_Total_Mercado, fill = Producto)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = scales::comma(Volumen_Total_Mercado, big.mark = ".")), vjust = -0.5, size = 4) + 
+    labs(
+      title = "Top 3 Hortalizas Comercializadas en Vega Central Mapocho (2025)",
+      x = "Hortaliza",
+      y = "Volumen Total en Mercado",
+      fill = "Hortaliza",
+      caption = "Fuente: Elaboración propia, Top 3 Hortalizas Comercializadas 2025 (Vega Central Mapocho de Santiago)"
+    ) +
+    scale_y_continuous(
+      labels = scales::label_comma(big.mark = "."),
+      expand = expansion(mult = c(0, 0.1)) 
+    ) +
+    theme_gray()
+  
+# Grafico 4: Top 3 hortalizas mas comercializadas entre 2016-2018 (PORCENTAJE)
+  
+df_vol_prod_perc <- df_5_hortalizas %>%
+    filter(Año >= 2016 & Año <= 2018) %>%
+    group_by(Producto, Subsector) %>%
+    summarise(Volumen_Total = sum(Volumen_anual, na.rm = TRUE)) %>%
+    ungroup() %>%
+    arrange(desc(Volumen_Total)) %>%
+    slice_head(n = 3) %>% 
+    mutate(
+      Porcentaje = Volumen_Total / sum(Volumen_Total),
+      Etiqueta_Posicion = cumsum(Porcentaje) - 0.5 * Porcentaje 
+    )
+ggplot(df_vol_prod_perc, aes(x = "", y = Porcentaje, fill = Producto)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar("y", start = 0) + 
+    geom_text(aes(y = Etiqueta_Posicion, label = scales::percent(Porcentaje, accuracy = 0.1)), color = "black", size = 4) +
+    
+    labs(
+      title = "TOP 3: Hortalizas más comercializadas (Porcentual, 2016-2018)",
+      x = NULL,
+      y = NULL,
+      fill = "Producto",
+      caption = "Fuente: Elaboración Propia, Top 3 Hortalizas más Comercializadas (Volumen, Porcentaje 2016-2018) "
+    ) +
+    theme_void()
+
+#Gráfico 5: precio minimo de las 5 hortalizas en el año 2024
+
+df_2024_hortalizas <- df_5_hortalizas %>%
+  filter(Año == 2024) %>%
+  group_by(Producto, Unidad_comercializacion) %>%
+  summarise(
+    Precio_min_2024 = min(Precio_min, na.rm = TRUE),
+    .groups = 'drop'
+  )
+ggplot(df_2024_hortalizas, aes(x = Producto, y = Precio_min_2024, fill = Unidad_comercializacion)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = Precio_min_2024), position = position_dodge(width = 0.9), vjust = -0.5, size = 3) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.18))) +
+  coord_cartesian(clip = "off") +
+  labs(
+    title = "Precio Mínimo de Hortalizas en 2024 por Unidad de Comercialización",
+    x = "Hortaliza",
+    y = "Precio Mínimo ($)",
+    fill = "Unidad de Comercialización",
+    caption = "Fuente: Elaboración propia, precios mínimos de hortalizas en 2024"
+  ) +
+  theme_minimal()
+
+#Grafico 6: Distribución porcentual del volumen (Frutas vs. Hortalizas) 2021
+
+df_frutas_2021 <- df_5_frutas %>%
+  filter(Año == 2021) %>%
+  summarise(Volumen_Total = sum(Volumen_anual, na.rm = TRUE)) %>%
+  mutate(Categoria = "Frutas")
+
+df_hortalizas_2021 <- df_5_hortalizas %>%
+  filter(Año == 2021) %>%
+  summarise(Volumen_Total = sum(Volumen_anual, na.rm = TRUE)) %>%
+  mutate(Categoria = "Hortalizas")
+
+df_vol_categoria_2021 <- bind_rows(df_frutas_2021, df_hortalizas_2021)
+df_vol_categoria_2021_perc <- df_vol_categoria_2021 %>%
+  mutate(
+    Porcentaje = Volumen_Total / sum(Volumen_Total),
+    Etiqueta_Posicion = cumsum(Porcentaje) - 0.5 * Porcentaje
+  )
+ggplot(df_vol_categoria_2021_perc, aes(x = "", y = Porcentaje, fill = Categoria)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  geom_text(aes(y = Etiqueta_Posicion, label = scales::percent(Porcentaje, accuracy = 0.1)), color = "black", size = 5) +
+  
+  labs(
+    title = "Distribución porcentual del volumen (Frutas vs. Hortalizas) en 2021",
+    x = NULL,
+    y = NULL,
+    fill = "Categoría",
+    caption = "Fuente: Elaboracion Propia, distribución porcentual del volumen total de las 5 frutas y 5 hortalizas en el año 2021. "
+  ) +
+  theme_void()
+
+#Gráfico 7:  Precio Promedio de la Mora por Región en 2018
+
+df_mora_region <- df_5_frutas %>%
+  filter(Producto == 'Mora' & Año == 2018) %>%
+  group_by(Region) %>%
+  summarise(
+    Precio_Prom_Region = mean(Precio_promedio_anual, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  arrange(desc(Precio_Prom_Region))
+
+ggplot(df_mora_region, aes(x = reorder(Region, Precio_Prom_Region), y = Precio_Prom_Region, fill = Region)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::comma(Precio_Prom_Region, big.mark = ".")), hjust = -0.1, size = 4) +
+  labs(
+    title = "Precio Promedio de la Mora por Región (Año 2018)",
+    x = "Región",
+    y = "Precio Promedio Anual ($)",
+    fill = "Región",
+    caption = "Fuente: Elaboración Propia, Comparación del precio promedio de la Mora por región en el año 2018"
+  ) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::label_comma(big.mark = "."), expand = expansion(mult = c(0, 0.1))) +
+  theme_minimal()
+
+#Gráfico 8: cantidad de repollo en el año 2020 en base a la calidad
+
+df_repollo_2020 <- df_5_hortalizas %>%
+  filter(Producto == 'Repollo' & Año == 2020) %>%
+  group_by(Calidad) %>%
+  summarise(
+    Total_Volumen = sum(Volumen, na.rm = TRUE),
+    .groups = 'drop'
+  )
+ggplot(df_repollo_2020, aes(x = Calidad, y = Total_Volumen, fill = Calidad)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::comma(Total_Volumen, big.mark = ".")), vjust = -0.5, size = 3.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15)), 
+                     labels = scales::label_comma(big.mark = ".")) + 
+  coord_cartesian(clip = "off") +
+  labs(
+    title = "Volumen Total de Repollo por Calidad en 2020",
+    x = "Calidad",
+    y = "Volumen Total",
+    caption = "Fuente: Elaboración Propia, Volumen total de Repollo por calidad en el año 2020"
+  ) +
+  theme_minimal()
+
+
+#Gráfico 9: Precio Máximo de Ciboulette por Región en 2025
+
+df_ciboulette_2025 <- df_5_hortalizas %>%
+  filter(Producto == 'Ciboulette' & Año == 2025) %>%
+  group_by(Region) %>%
+  summarise(
+    Precio_max = max(Precio_max, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+ggplot(df_ciboulette_2025, aes(x = reorder(Region, -Precio_max), y = Precio_max, fill = Region)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::comma(Precio_max, big.mark = ".")), 
+            vjust = -0.5, 
+            size = 3.5) + 
+  labs(
+    title = "Precio Máximo de Ciboulette por Región en 2025",
+    x = "Región",
+    y = "Precio Máximo ($)",
+    caption = "Fuente: Elaboración Propia, Precio Máximo de Ciboulette (Región, 2025)"
+  ) +
+  scale_y_continuous(labels = NULL, expand = expansion(mult = c(0, 0.15))) + 
+  theme_gray() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#Gráfico 10: Precio Máximo de Bruselas (repollito) por Unidad de Comercialización en 2025
+
+df_bruselas_2025 <- df_5_hortalizas %>%
+  filter(Producto == 'Bruselas (repollito)' & Año == 2025) %>%
+  group_by(Unidad_comercializacion) %>%
+  summarise(
+    Precio_max = max(Precio_max, na.rm = TRUE)
+  ) %>%
+  ungroup()
+ggplot(df_bruselas_2025, aes(x = reorder(Unidad_comercializacion, -Precio_max), y = Precio_max)) +
+  geom_bar(stat = "identity", aes(fill = Unidad_comercializacion)) +
+  geom_text(aes(label = scales::comma(Precio_max, big.mark = ".")), 
+            vjust = -0.5, 
+            color = "black", 
+            size = 3.5) +
+  labs(
+    title = "Precio Máximo de Bruselas (repollito) por Unidad de Comercialización en 2025",
+    x = "Unidad de Comercialización",
+    y = "Precio Máximo ($)",
+    caption = "Fuente: Elaboración Propia, Precios máximos de Bruselas (repollito) en 2025.",
+    fill = "Unidad" 
+  ) +
+  scale_y_continuous(labels = scales::label_comma(big.mark = "."), 
+                     expand = expansion(mult = c(0, 0.15))) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 0.5) 
+  )
+
 
